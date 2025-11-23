@@ -5,7 +5,7 @@ pipeline{
         stage('Dependency-Track'){
             steps {
                 script{
-                    sh 'curl -LO https://dependencytrack.org/docker-compose.yml'
+                    sh 'docker compose pull'
                     sh 'docker compose up -d'
                 }
             }
