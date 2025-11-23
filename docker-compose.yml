@@ -41,7 +41,7 @@ services:
     environment:
       - API_BASE_URL=http://localhost:8081
     ports:
-      - "8080:8080"
+      - "8082:8080"
     restart: unless-stopped
 
 volumes:
