@@ -1,4 +1,7 @@
+version: "3.8"
+
 services:
+  # ------------ TU APLICACIÓN (PyGoat) ------------
   web:
     build: .
     command: gunicorn --bind 0.0.0.0:8000 --workers 6 pygoat.wsgi
@@ -8,13 +11,15 @@ services:
       - .:/app
     depends_on:
       - migration
+
   migration:
     image: pygoat/pygoat:latest
     command: python manage.py migrate --noinput
     volumes:
       - .:/app
 
-dtrack-apiserver:
+  # ------------ DEPENDENCY-TRACK API SERVER ------------
+  dtrack-apiserver:
     image: dependencytrack/apiserver
     deploy:
       resources:
@@ -25,12 +30,13 @@ dtrack-apiserver:
       restart_policy:
         condition: on-failure
     ports:
-      - '8081:8080'
+      - "8081:8080"
     volumes:
-      - 'dependency-track:/data'
+      - dependency-track:/data
     restart: unless-stopped
 
-dtrack-frontend:
+  # ------------ DEPENDENCY-TRACK FRONTEND ------------
+  dtrack-frontend:
     image: dependencytrack/frontend
     depends_on:
       - dtrack-apiserver
@@ -39,3 +45,6 @@ dtrack-frontend:
     ports:
       - "8080:8080"
     restart: unless-stopped
+
+volumes:
+  dependency-track:
