@@ -4,9 +4,15 @@ pipeline{
     stages{
 
         stage('install-safety'){
+            agent{
+                docker{
+                    image 'python:3.11-alpine'
+                }
+            }
             steps {
                 script{
                     sh 'pip install safety'
+                    sh 'safety --version'
                 }
             }
         }
