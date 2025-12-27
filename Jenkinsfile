@@ -1,6 +1,10 @@
 pipeline{
     agent any
 
+    environment {
+            SAFETY_API_KEY = credentials('safety-api-key')
+    }
+
     stages{
 
         stage('install-safety'){
