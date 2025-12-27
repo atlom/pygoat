@@ -17,7 +17,7 @@ pipeline{
                 script{
                     sh 'pip install safety'
                     sh 'safety --version'
-                    sh 'safety --stage cicd scan'
+                    sh 'safety --stage cicd scan --json > safety-report.json'
                 }
             }
         }
@@ -48,4 +48,9 @@ pipeline{
         //     }
         // }
     }
+    post {
+    always {
+        archiveArtifacts artifacts: 'safety-report.json', fingerprint: true
+    }
+}
 }
