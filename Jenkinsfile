@@ -17,7 +17,7 @@ pipeline{
                 script{
                     sh 'pip install safety'
                     sh 'safety --version'
-                    sh 'safety scan'
+                    sh 'safety --stage cicd scan'
                 }
             }
         }
