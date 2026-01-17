@@ -1,15 +1,21 @@
 pipeline{
     agent any
 
-    stages{
 
-        stage('test'){
-            agent none
+    stages{
+        stage('bandit-test'){
+            agent{
+                docker{
+                    image 'python:3.11-alpine'
+                }
+            }
             steps {
                 script{
-                    ph 'clear'
+                    sh 'pip install bandit'
+                    sh 'bandit --version'
                 }
             }
         }
+
     }
 }
