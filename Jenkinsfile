@@ -4,13 +4,12 @@ pipeline{
     stages{
 
         stage('test'){
-            agent{ none
+            agent none
             steps {
                 script{
                     ph 'clear'
                 }
             }
         }
-
     }
 }
