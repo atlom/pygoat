@@ -13,7 +13,7 @@ pipeline{
                 script{
                     sh 'pip install bandit'
                     sh 'bandit --version'
-                    sh 'bandit -r pygoat/asgi.py'
+                    sh 'bandit -r .'
                 }
             }
         }
