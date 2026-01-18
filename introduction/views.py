@@ -4,7 +4,7 @@ import hashlib
 import json
 import logging
 import os
-import pickle
+#import pickle
 import random
 import re
 import string
