@@ -10,7 +10,7 @@ import re
 import string
 import subprocess
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from hashlib import md5
 from io import BytesIO
 from random import randint
@@ -198,8 +198,12 @@ def insec_des(request):
 @dataclass
 class TestUser:
     admin: int = 0
-pickled_user = pickle.dumps(TestUser())
-encoded_user = base64.b64encode(pickled_user)
+# pickled_user = pickle.dumps(TestUser())
+# encoded_user = base64.b64encode(pickled_user)
+# Usamos el modulo json en vez de pickle
+json_user = json.dumps(asdict(TestUser()))
+encoded_user = base64.b64encode(json_user.encode("utf-8"))
+
 
 def insec_des_lab(request):
     if request.user.is_authenticated:
@@ -209,9 +213,10 @@ def insec_des_lab(request):
             token = encoded_user
             response.set_cookie(key='token',value=token.decode('utf-8'))
         else:
-            token = base64.b64decode(token)
-            admin = pickle.loads(token)
-            if admin.admin == 1:
+            token = base64.b64decode(token).decode("utf-8")
+            admin = json.loads(token)
+
+            if isinstance(admin, asdict) and admin.get("admin") == 1:
                 response = render(request,'Lab/insec_des/insec_des_lab.html', {"message":"Welcome Admin, SECRETKEY:ADMIN123"})
                 return response
 
