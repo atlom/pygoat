@@ -230,18 +230,55 @@ def mitre_lab_17(request):
     return render(request, 'mitre/mitre_lab_17.html')
 
 def command_out(command):
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return process.communicate()
+    # process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # return process.communicate()
+    
+    process = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,        # devuelve str, no bytes
+        timeout=20,       # evita procesos largos
+        shell=False       # no usar shell=true 
+    )
+    return process.stdout, process.stderr
     
 
 @csrf_exempt
 def mitre_lab_17_api(request):
-    if request.method == "POST":
-        ip = request.POST.get('ip')
-        command = "nmap " + ip 
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    ip = request.POST.get("ip", "").strip()
+
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+    except ValueError:
+        return JsonResponse({"error": "Invalid IP address"}, status=400)
+    command = [
+        "nmap",
+        "-Pn",
+        "-n",
+        str(ip_obj)
+    ]
+
+    try:
         res, err = command_out(command)
-        res = res.decode()
-        err = err.decode()
-        pattern = "STATE SERVICE.*\\n\\n"
-        ports = re.findall(pattern, res,re.DOTALL)[0][14:-2].split('\n')
-        return JsonResponse({'raw_res': str(res), 'raw_err': str(err), 'ports': ports})
+    except subprocess.TimeoutExpired:
+        return JsonResponse({"error": "nmap timeout"}, status=504)
+    except FileNotFoundError:
+        return JsonResponse({"error": "nmap not installed"}, status=500)
+
+    pattern = r"STATE SERVICE.*\n\n"
+    matches = re.findall(pattern, res, re.DOTALL)
+
+    ports = []
+    if matches:
+        ports = matches[0][14:-2].split("\n")
+
+    return JsonResponse({
+        "raw_res": res,
+        "raw_err": err,
+        "ports": ports
+    })
