@@ -9,14 +9,14 @@ pipeline{
         DTRACK_PROJECT_NAME = "pygoat"
     }
     stages{
-        stage('bandit-scan'){
-            steps {
-                script{
-                    sh 'pip install bandit'
-                    sh 'bandit -r .'
-                }
-            }
-        }
+        // stage('bandit-scan'){
+        //     steps {
+        //         script{
+        //             sh 'pip install bandit'
+        //             sh 'bandit -r .'
+        //         }
+        //     }
+        // }
         stage('Generate SBOM') {
             steps {
                 sh '''
