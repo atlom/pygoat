@@ -20,16 +20,17 @@ pipeline{
         stage('Generate SBOM') {
             steps {
                 sh '''
-                                set -eux
+                    set -eux
                     test -f requirements.txt
 
                     pip install --no-cache-dir cyclonedx-bom
-
-                    # Variante A: requirements.txt
-                    cyclonedx-py requirements -i requirements.txt -o bom.json --output-format json
+                    cyclonedx-py requirements \
+                        -i requirements.txt \
+                        -o bom.json \
+                        --output-format json
 
                     test -s bom.json
-                    head -c 200 bom.json || true
+                    ls -la bom.json
                 '''
             }
         }
@@ -38,6 +39,9 @@ pipeline{
             steps {
                 withCredentials([string(credentialsId: 'DepTrack', variable: 'DTRACK_API_KEY')]) {
                 sh '''
+                    set -eux
+                    apk add --no-cache curl ca-certificates
+
                     curl -sS -X POST "$DTRACK_URL/api/v1/bom" \
                     -H "X-Api-Key: $DTRACK_API_KEY" \
                     -H "Content-Type: multipart/form-data" \
