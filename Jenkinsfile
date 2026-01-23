@@ -20,23 +20,26 @@ pipeline{
         stage('Generate SBOM') {
             steps {
                 sh '''
-                python -V || true
+                                set -eux
+                    test -f requirements.txt
 
-                test -f requirements.txt
+                    pip install --no-cache-dir cyclonedx-bom
 
-                pip install --no-cache-dir cyclonedx-bom
-                cyclonedx-py requirements -i requirements.txt -o bom.json --output-format json
+                    # Variante A: requirements.txt
+                    cyclonedx-py requirements -i requirements.txt -o bom.json --output-format json
 
+                    test -s bom.json
+                    head -c 200 bom.json || true
                 '''
             }
         }
 
         stage('dependency-track-scan'){
             steps {
-                withCredentials([string(credentialsId: 'DepTrack', variable: 'DepTrack')]) {
+                withCredentials([string(credentialsId: 'DepTrack', variable: 'DTRACK_API_KEY')]) {
                 sh '''
                     curl -sS -X POST "$DTRACK_URL/api/v1/bom" \
-                    -H "X-Api-Key: $DepTrack" \
+                    -H "X-Api-Key: $DTRACK_API_KEY" \
                     -H "Content-Type: multipart/form-data" \
                     -F "projectName=$DTRACK_PROJECT_NAME" \
                     -F "autoCreate=true" \
