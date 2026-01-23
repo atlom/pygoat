@@ -25,8 +25,8 @@ pipeline{
                 test -f requirements.txt
 
                 pip install --no-cache-dir cyclonedx-bom
-                cyclonedx-py -r -i requirements.txt -o bom.xml
-                ls -la bom.xml
+                cyclonedx-py requirements -i requirements.txt -o bom.json --output-format json
+
                 '''
             }
         }
@@ -40,7 +40,7 @@ pipeline{
                     -H "Content-Type: multipart/form-data" \
                     -F "projectName=$DTRACK_PROJECT_NAME" \
                     -F "autoCreate=true" \
-                    -F "bom=@bom.xml"
+                    -F "bom=@bom.json"
                 '''
                 }
             }
