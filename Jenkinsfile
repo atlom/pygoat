@@ -24,11 +24,10 @@ pipeline{
                         test -f requirements.txt
 
                         pip install --no-cache-dir cyclonedx-bom
-
-                        pip install --no-cache-dir -r requirements.txt
-                        cyclonedx-py environment \
-                        -o bom.json \
-                        --output-format json
+                        cyclonedx-py requirements \
+                            -i requirements.txt \
+                            -o bom.json \
+                            --output-format json
 
                         test -s bom.json
 
@@ -46,6 +45,5 @@ pipeline{
                 
             }
         }
-        
     }
 }
