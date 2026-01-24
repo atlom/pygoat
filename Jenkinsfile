@@ -1,7 +1,7 @@
 pipeline{
     agent{
         docker{
-            image 'python:3.11-alpine'
+            image 'python:3.11-slim'
         }
     }
     environment{
