@@ -62,6 +62,8 @@ pipeline{
                         --exit-code 1 \
                         --report-format json \
                         --report-path /repo/gitleaks.json
+
+                    test gitleaks.json
                 '''
             }
             post {
