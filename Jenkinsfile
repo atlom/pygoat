@@ -49,17 +49,25 @@ pipeline{
         stage('git-leaks-scan'){
             steps{
                 sh '''
+                    set -e
                     apk add --no-cache docker-cli
+                    mkdir -p reports
 
-                    docker run --rm -v \
-                    $PWD:/repo \
-                    -w /repo \
-                    zricethezav/gitleaks:latest detect \
-                    --source=/repo \
-                    --redact \
-                    --exit-code 1 \
-                    --report-format json --report-path gitleaks.json
+                    docker run --rm \
+                        -v "$PWD:/repo" \
+                        -w /repo \
+                        zricethezav/gitleaks:latest \
+                        dir /repo \
+                        --redact \
+                        --exit-code 1 \
+                        --report-format json \
+                        --report-path reports/gitleaks.json
                 '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'reports/gitleaks.json', fingerprint: true
+                }
             }
         }
     }
