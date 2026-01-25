@@ -55,8 +55,12 @@ pipeline{
                     curl -sL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz
                     chmod +x gitleaks
 
-                    ./gitleaks dir . --redact --exit-code 1 --report-format json --report-path gitleaks.json
-                    ls -la gitleaks.json
+                    ./gitleaks detect \
+                    --source . \
+                    --redact \
+                    --exit-code 1 \
+                    --report-format json \
+                    --report-path gitleaks.json
                 '''
             }
             post {
