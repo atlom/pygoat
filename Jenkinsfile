@@ -45,5 +45,13 @@ pipeline{
                 
             }
         }
+        stage('git-leaks-scan'){
+            steps{
+                sh '''
+                    brew install gitleaks
+                    gitleaks version
+                '''
+            }
+        }
     }
 }
