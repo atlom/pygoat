@@ -48,8 +48,14 @@ pipeline{
         stage('git-leaks-scan'){
             steps{
                 sh '''
-                    brew install gitleaks
-                    gitleaks version
+                    docker run --rm -v \
+                    $PWD:/repo \
+                    -w /repo \
+                    zricethezav/gitleaks:latest detect \
+                    --source=/repo \
+                    --redact \
+                    --exit-code 1 \
+                    --report-format json --report-path gitleaks.json
                 '''
             }
         }
