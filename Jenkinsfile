@@ -2,7 +2,6 @@ pipeline{
     agent{
         docker{
             image 'python:3.11-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     environment{
@@ -50,20 +49,14 @@ pipeline{
             steps{
                 sh '''
                     set -e
-                    apk add --no-cache docker-cli
+                    apk add --no-cache curl tar
 
+                    GITLEAKS_VERSION="8.18.4"
+                    curl -sL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz
+                    chmod +x gitleaks
 
-                    docker run --rm \
-                        -v "$PWD:/repo" \
-                        -w /repo \
-                        zricethezav/gitleaks:latest \
-                        dir /repo \
-                        --redact \
-                        --exit-code 1 \
-                        --report-format json \
-                        --report-path /repo/gitleaks.json
-
-                    test gitleaks.json
+                    ./gitleaks dir . --redact --exit-code 1 --report-format json --report-path gitleaks.json
+                    ls -la gitleaks.json
                 '''
             }
             post {
