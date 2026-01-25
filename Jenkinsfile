@@ -49,7 +49,7 @@ pipeline{
             steps{
                 sh '''
                     set -e
-                    apk add --no-cache curl tar
+                    apk add --no-cache curl tar git
 
                     GITLEAKS_VERSION="8.18.4"
                     curl -sL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz
