@@ -2,6 +2,7 @@ pipeline{
     agent{
         docker{
             image 'python:3.11-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     environment{
@@ -48,6 +49,8 @@ pipeline{
         stage('git-leaks-scan'){
             steps{
                 sh '''
+                    apk add --no-cache docker-cli
+
                     docker run --rm -v \
                     $PWD:/repo \
                     -w /repo \
