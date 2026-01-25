@@ -60,7 +60,7 @@ pipeline{
                         --redact \
                         --exit-code 1 \
                         --report-format json \
-                        --report-path repo/gitleaks.json
+                        --report-path gitleaks.json
                 '''
             }
             post {
