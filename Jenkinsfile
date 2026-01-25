@@ -54,7 +54,7 @@ pipeline{
                     docker run --rm -v \
                     $PWD:/repo \
                     -w /repo \
-                    zricethezav/gitleaks:8.18.4 detect \
+                    ghcr.io/gitleaks/gitleaks:8.18.4 detect \
                     --source=/repo \
                     --redact \
                     --exit-code 1 \
