@@ -52,7 +52,6 @@ pipeline{
                     set -e
                     apk add --no-cache docker-cli
 
-                    mkdir -p reports
 
                     docker run --rm \
                         -v "$PWD:/repo" \
@@ -62,12 +61,12 @@ pipeline{
                         --redact \
                         --exit-code 1 \
                         --report-format json \
-                        --report-path /repo/reports/gitleaks.json
+                        --report-path gitleaks.json
                 '''
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'reports/gitleaks.json', fingerprint: true
+                    archiveArtifacts artifacts: 'gitleaks.json', fingerprint: true
                 }
             }
         }
