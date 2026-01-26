@@ -13,7 +13,17 @@ pipeline{
             steps {
                 script{
                     sh 'pip install bandit'
-                    sh 'bandit -r . -f json -o bandit.json'
+                    int rc = sh(
+                        script: 'bandit -r . -f json -o bandit.json',
+                        returnStatus: true
+                    )
+
+                    if (rc != 0) {
+                        currentBuild.result = 'UNSTABLE'
+                        echo "Bandit encontró hallazgos (exit code ${rc}). El pipeline continúa."
+                    } else {
+                        echo "Bandit sin hallazgos."
+                    }
                 }
             }
             post {
