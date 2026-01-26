@@ -5,8 +5,10 @@ pipeline{
         }
     }
     environment{
-        DTRACK_URL = "http://host.docker.internal:8081" //No lo tengo en la misma red, pero eso se usa esta url
+        DTRACK_URL = "http://host.docker.internal:8081" //No lo tengo en la misma red, pero eso se usa esta url.
         DTRACK_PROJECT_NAME = "pygoat"
+        DD_URL = "http://host.docker.internal:8085" 
+        DD_ENGAGEMENT_ID = "1" 
     }
     stages{
         stage('bandit-scan'){
@@ -17,7 +19,7 @@ pipeline{
                         script: 'bandit -r . -f json -o bandit.json',
                         returnStatus: true
                     )
-
+                    //Marca como UNSTABLE en caso de que el bandit encuentre vulnerabilidades.
                     if (rc != 0) {
                         currentBuild.result = 'UNSTABLE'
                         echo "Bandit encontró hallazgos (exit code ${rc}). El pipeline continúa."
@@ -81,6 +83,33 @@ pipeline{
             post {
                 always {
                     archiveArtifacts artifacts: 'gitleaks.json', fingerprint: true
+                }
+            }
+        }
+        stage('DefectDojo-upload'){
+            steps{
+                withCredentials([string(credentialsId: 'DefectDojo', variable: 'DD_TOKEN')]){
+                    sh '''
+                        apk add --no-cache curl ca-certificates
+
+                         # Bandit
+                        test -f bandit.json
+                        curl -sS -X POST "$DD_URL/api/v2/reimport-scan/" \
+                            -H "Authorization: Token $DD_TOKEN" \
+                            -F "engagement=$DD_ENGAGEMENT_ID" \
+                            -F "scan_type=Bandit" \
+                            -F "test_title=bandit" \
+                            -F "file=@bandit.json" >/dev/null
+
+                        # Gitleaks
+                        test -f gitleaks.json
+                        curl -sS -X POST "$DD_URL/api/v2/reimport-scan/" \
+                            -H "Authorization: Token $DD_TOKEN" \
+                            -F "engagement=$DD_ENGAGEMENT_ID" \
+                            -F "scan_type=Gitleaks" \
+                            -F "test_title=gitleaks" \
+                            -F "file=@gitleaks.json" >/dev/null
+                    '''
                 }
             }
         }
