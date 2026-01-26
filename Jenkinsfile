@@ -16,6 +16,11 @@ pipeline{
                     sh 'bandit -r . -f json -o bandit.json'
                 }
             }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'bandit.json', fingerprint: true
+                }
+            }
         }
         stage('dependency-track-scan') {
             steps {
