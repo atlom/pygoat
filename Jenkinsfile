@@ -94,7 +94,7 @@ pipeline{
 
                          # Bandit
                         test -f bandit.json
-                        curl -sS -X POST "$DD_URL/api/v2/import-scan/" \
+                        curl -sS -X POST "$DD_URL/api/v2/reimport-scan/" \
                             -H "Authorization: Token $DD_TOKEN" \
                             -F "engagement=$DD_ENGAGEMENT_ID" \
                             -F "scan_type=Bandit Scan" \
@@ -103,7 +103,7 @@ pipeline{
 
                         # Gitleaks
                         test -f gitleaks.json
-                        curl -sS -X POST "$DD_URL/api/v2/import-scan/" \
+                        curl -sS -X POST "$DD_URL/api/v2/reimport-scan/" \
                             -H "Authorization: Token $DD_TOKEN" \
                             -F "engagement=$DD_ENGAGEMENT_ID" \
                             -F "scan_type=Gitleaks Scan" \
