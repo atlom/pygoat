@@ -97,7 +97,7 @@ pipeline{
                         curl -sS -X POST "$DD_URL/api/v2/reimport-scan/" \
                             -H "Authorization: Token $DD_TOKEN" \
                             -F "engagement=$DD_ENGAGEMENT_ID" \
-                            -F "scan_type=Bandit" \
+                            -F "scan_type=Bandit Scan" \
                             -F "test_title=bandit" \
                             -F "file=@bandit.json" >/dev/null
 
@@ -106,7 +106,7 @@ pipeline{
                         curl -sS -X POST "$DD_URL/api/v2/reimport-scan/" \
                             -H "Authorization: Token $DD_TOKEN" \
                             -F "engagement=$DD_ENGAGEMENT_ID" \
-                            -F "scan_type=Gitleaks" \
+                            -F "scan_type=Gitleaks Scan" \
                             -F "test_title=gitleaks" \
                             -F "file=@gitleaks.json" >/dev/null
                     '''
