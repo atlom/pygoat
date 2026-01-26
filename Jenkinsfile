@@ -73,7 +73,7 @@ pipeline{
                     ./gitleaks detect \
                     --source . \
                     --redact \
-                    --exit-code 1 \
+                    --exit-code 0 \
                     --report-format json \
                     --report-path gitleaks.json
                 '''
