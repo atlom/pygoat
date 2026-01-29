@@ -123,7 +123,7 @@ pipeline{
         //                 returnStatus: true
         //             )
         //             if(highRisk > 0){
-        //                 error("Security gate failed: vulnerabilidades críticas")
+        //                 error("Security gate failed: vulnerabilidades críticas y/o altas encontradas")
         //             }
         //         }
         //     }
@@ -139,11 +139,24 @@ pipeline{
                         echo "== Lookup project UUID =="
                         lookup_url="$DTRACK_URL/api/v1/project/lookup?name=$DTRACK_PROJECT_NAME&version=$DTRACK_PROJECT_VERSION"
 
-                        # Traemos el UUID (respuesta es JSON del proyecto)
+                        # Traemos el UUID y lo guardo
                         PROJECT_INFO=$(curl -s -X GET "$lookup_url" \
                                 -H "X-Api-Key: $DTRACK_API_KEY")
 
                         PROJECT_UUID=$(echo "$PROJECT_INFO" | jq -r '.uuid')
+
+                        # Ahora si el informe de vulnerabilidades
+                        DATA_METRICS=$(curl -s -X GET "$DTRACK_URL/api/v1/metrics/project/$PROJECT_UUID/current" \
+                                -H "X-Api-Key: $DTRACK_API_KEY")
+                        
+                        CRITICAL=$(echo "$DATA_METRICS" | jq '.critical')
+                        HIGH=$(echo "$DATA_METRICS" | jq '.high')
+
+                        #Si hay almenos una vulnerabilidad CRITICAL o HIGH, falla el build
+                        if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+                            echo "Security gate failed: vulnerabilidades críticas y/o altas encontradas."
+                            exit 1
+                        fi
                     '''
                 }
             }
