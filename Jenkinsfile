@@ -144,7 +144,6 @@ pipeline{
                                 -H "X-Api-Key: $DTRACK_API_KEY")
 
                         PROJECT_UUID=$(echo "$PROJECT_INFO" | jq -r '.uuid')
-
                     '''
                 }
             }
