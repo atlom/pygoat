@@ -134,7 +134,7 @@ pipeline{
                     sh '''
                         set -eu
 
-                        apk add --no-cache curl ca-certificates
+                        apk add --no-cache curl ca-certificates jq
 
                         echo "== Lookup project UUID =="
                         lookup_url="$DTRACK_URL/api/v1/project/lookup?name=$DTRACK_PROJECT_NAME&version=$DTRACK_PROJECT_VERSION"
