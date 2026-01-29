@@ -131,7 +131,7 @@ pipeline{
         stage('DependencyTrack-security-gate'){
             steps{
                 withCredentials([string(credentialsId: 'DepTrack', variable: 'DTRACK_API_KEY')]) {
-                    sh sh '''
+                    sh '''
         set -eu
 
         apk add --no-cache curl ca-certificates
