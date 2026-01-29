@@ -126,6 +126,30 @@ pipeline{
                     }
                 }
             }
+        } 
+        stage('DependencyTrack-security-gate'){
+            steps{
+                withCredentials([string(credentialsId: 'DepTrack', variable: 'DTRACK_API_KEY')]) {
+                    sh '''
+                        apk add --no-cache curl ca-certificates
+
+                        url="$DTRACK_URL/api/v1/project/lookup?name=$DTRACK_PROJECT_NAME&version=main"
+
+                        project_uuid=$(curl -sS -H "X-Api-Key: $DTRACK_API_KEY" "$lookup_url" | python - <<'PY'
+                            import json,sys
+                            d=json.load(sys.stdin)
+                            print(d.get("uuid",""))
+                            PY
+                        )
+
+                        if [ -z "$project_uuid" ]; then
+                            echo "ERROR: No pude obtener project UUID. Verifica DTRACK_PROJECT_NAME / DTRACK_PROJECT_VERSION."
+                            exit 2
+                        fi
+
+                    '''
+                }
+            }
         }   
     }
 }
