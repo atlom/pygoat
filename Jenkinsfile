@@ -140,13 +140,11 @@ pipeline{
                         lookup_url="$DTRACK_URL/api/v1/project/lookup?name=$DTRACK_PROJECT_NAME&version=$DTRACK_PROJECT_VERSION"
 
                         # Traemos el UUID (respuesta es JSON del proyecto)
-                        project_uuid=$(curl -sS -H "X-Api-Key: $DTRACK_API_KEY" "$lookup_url" | python - <<'PY'
-
                         PROJECT_INFO=$(curl -s -X GET "$lookup_url" \
                                 -H "X-Api-Key: $DTRACK_API_KEY")
 
                         PROJECT_UUID=$(echo "$PROJECT_INFO" | jq -r '.uuid')
-                        
+
                     '''
                 }
             }
