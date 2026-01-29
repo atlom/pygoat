@@ -7,6 +7,7 @@ pipeline{
     environment{
         DTRACK_URL = "http://host.docker.internal:8081" //No lo tengo en la misma red, pero eso se usa esta url.
         DTRACK_PROJECT_NAME = "pygoat"
+        DTRACK_PROJECT_VERSION = "main"
         DD_URL = "http://host.docker.internal:8085" 
         DD_ENGAGEMENT_ID = "1" 
     }
@@ -130,24 +131,78 @@ pipeline{
         stage('DependencyTrack-security-gate'){
             steps{
                 withCredentials([string(credentialsId: 'DepTrack', variable: 'DTRACK_API_KEY')]) {
-                    sh '''
-                        apk add --no-cache curl ca-certificates
+                    sh sh '''
+        set -eu
 
-                        url="$DTRACK_URL/api/v1/project/lookup?name=$DTRACK_PROJECT_NAME&version=main"
+        apk add --no-cache curl ca-certificates
 
-                        project_uuid=$(curl -sS -H "X-Api-Key: $DTRACK_API_KEY" "$lookup_url" | python - <<'PY'
-                            import json,sys
-                            d=json.load(sys.stdin)
-                            print(d.get("uuid",""))
-                            PY
-                        )
+        echo "== Lookup project UUID =="
+        lookup_url="$DTRACK_URL/api/v1/project/lookup?name=$DTRACK_PROJECT_NAME&version=$DTRACK_PROJECT_VERSION"
 
-                        if [ -z "$project_uuid" ]; then
-                            echo "ERROR: No pude obtener project UUID. Verifica DTRACK_PROJECT_NAME / DTRACK_PROJECT_VERSION."
-                            exit 2
-                        fi
+        # Traemos el UUID (respuesta es JSON del proyecto)
+        project_uuid=$(curl -sS -H "X-Api-Key: $DTRACK_API_KEY" "$lookup_url" | python - <<'PY'
+import json,sys
+d=json.load(sys.stdin)
+print(d.get("uuid",""))
+PY
+        )
 
-                    '''
+        if [ -z "$project_uuid" ]; then
+          echo "ERROR: No pude obtener project UUID. Verifica DTRACK_PROJECT_NAME / DTRACK_PROJECT_VERSION."
+          exit 2
+        fi
+
+        echo "Project UUID: $project_uuid"
+
+        echo "== Esperando análisis (poll) =="
+        # Esperamos hasta 5 min a que haya datos consistentes
+        # (D-Track analiza async después del upload del BOM)
+        max=30
+        i=0
+        vulns_json="[]"
+        while [ $i -lt $max ]; do
+          vulns_json=$(curl -sS -H "X-Api-Key: $DTRACK_API_KEY" \
+            "$DTRACK_URL/api/v1/vulnerability/project/$project_uuid" || echo "[]")
+
+          # Si devuelve algo que parezca lista, salimos del loop
+          echo "$vulns_json" | python - <<'PY' || true
+import json,sys
+try:
+  d=json.load(sys.stdin)
+  assert isinstance(d, list)
+  print("OK")
+except Exception:
+  pass
+PY
+          if echo "$vulns_json" | python - <<'PY'
+import json,sys
+d=json.load(sys.stdin)
+print(1 if isinstance(d,list) else 0)
+PY
+          | grep -q '^1$'; then
+            break
+          fi
+
+          i=$((i+1))
+          sleep 10
+        done
+
+        echo "== Evaluando severidades (CRITICAL/HIGH) =="
+
+        echo "$vulns_json" | python - <<'PY'
+import json,sys
+v=json.load(sys.stdin) if sys.stdin.readable() else []
+# v es una lista de vulnerabilidades, cada item suele traer severity
+crit=0; high=0
+for item in v:
+  sev = (item.get("severity") or "").upper()
+  if sev == "CRITICAL": crit += 1
+  elif sev == "HIGH": high += 1
+print(f"CRITICAL={crit} HIGH={high} TOTAL={len(v)}")
+# Gate: falla si hay crit o high
+sys.exit(1 if (crit>0 or high>0) else 0)
+PY
+      '''
                 }
             }
         }   
