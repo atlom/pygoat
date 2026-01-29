@@ -113,5 +113,17 @@ pipeline{
                 }
             }
         }
+        stage('Bandit-security-gate'){
+            script{
+                sh 'pip install bandit'
+                int highRisk = sh(
+                    script: 'bandit -r . -iii -f json -o high-risk-bandit.json',
+                    returnStatus: true
+                )
+                if(highRisk > 0){
+                    error("Security gate failed: vulnerabilidades críticas")
+                }
+            }
+        }   
     }
 }
