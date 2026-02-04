@@ -119,7 +119,7 @@ pipeline{
                 script{
                     sh 'pip install bandit'
                     int highRisk = sh(
-                        script: 'bandit -r . -iii -f json -o high-risk-bandit.json --severity-level high --confidence-level high',
+                        script: 'bandit -r . -f json -o high-risk-bandit.json --severity-level high --confidence-level high',
                         returnStatus: true
                     )
                     if(highRisk > 0){
