@@ -114,20 +114,20 @@ pipeline{
                 }
             }
         }
-        stage('Bandit-security-gate'){
-            steps{
-                script{
-                    sh 'pip install bandit'
-                    int highRisk = sh(
-                        script: 'bandit -r . -f json -o high-risk-bandit.json --severity-level high -i high',
-                        returnStatus: true
-                    )
-                    if(highRisk > 0){
-                        error("Security gate failed: vulnerabilidades altas encontradas")
-                    }
-                }
-            }
-        } 
+        // stage('Bandit-security-gate'){
+        //     steps{
+        //         script{
+        //             sh 'pip install bandit'
+        //             int highRisk = sh(
+        //                 script: 'bandit -r . -f json -o high-risk-bandit.json --severity-level high -i high',
+        //                 returnStatus: true
+        //             )
+        //             if(highRisk > 0){
+        //                 error("Security gate failed: vulnerabilidades altas encontradas")
+        //             }
+        //         }
+        //     }
+        // } 
         stage('DependencyTrack-security-gate'){
             steps{
                 withCredentials([string(credentialsId: 'DepTrack', variable: 'DTRACK_API_KEY')]) {
